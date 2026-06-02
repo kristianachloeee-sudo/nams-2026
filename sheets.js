@@ -1,7 +1,17 @@
+const LC_SHEET_MAP = {
+  ADMU: "ADMU May Responses",
+  CSB: "CSB May Responses",
+  DLSU: "DLSU May Responses",
+  MC: "MC May Responses",
+  UPC: "UPC May Responses",
+  UPD: "UPD May Responses",
+  UPLB: "UPLB May Responses",
+  UPM: "UPM May Responses",
+  UST: "UST May Responses"
+};
+
 const { google } = require("googleapis");
 const { getAllQuestionFields } = require("./questions");
-
-const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || "NAMS Responses";
 
 function getRequiredEnv(name) {
   const value = process.env[name];
@@ -34,11 +44,11 @@ async function getSheetsApi() {
   });
 }
 
-async function ensureSheetTab(sheets, spreadsheetId) {
+async function ensureSheetTab(sheets, spreadsheetId, sheetName) {
   try {
     await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!1:1`
+      range: `${sheetName}!1:1`
     });
   } catch (error) {
     const isMissingSheet = error?.code === 400 || error?.status === 400;
@@ -54,7 +64,7 @@ async function ensureSheetTab(sheets, spreadsheetId) {
           {
             addSheet: {
               properties: {
-                title: SHEET_NAME
+                title: sheetName
               }
             }
           }
@@ -77,12 +87,12 @@ function getHeaderRow() {
   ];
 }
 
-async function ensureHeaderRow(sheets, spreadsheetId, headers) {
-  await ensureSheetTab(sheets, spreadsheetId);
+async function ensureHeaderRow(sheets, spreadsheetId, sheetName, headers) {
+  await ensureSheetTab(sheets, spreadsheetId, sheetName);
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${SHEET_NAME}!1:1`
+    range: `${sheetName}!1:1`
   });
 
   const existingHeaders = response.data.values?.[0] || [];
@@ -90,17 +100,15 @@ async function ensureHeaderRow(sheets, spreadsheetId, headers) {
   if (existingHeaders.length === 0) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SHEET_NAME}!1:1`,
+      range: `${sheetName}!1:1`,
       valueInputOption: "RAW",
       requestBody: {
         values: [headers]
       }
     });
-
-    return headers;
   }
 
-  return existingHeaders;
+  return existingHeaders.length ? existingHeaders : headers;
 }
 
 function buildRow(headers, payload) {
@@ -118,13 +126,23 @@ function buildRow(headers, payload) {
 async function appendSurveyResponse(payload) {
   const spreadsheetId = getRequiredEnv("GOOGLE_SHEET_ID");
   const sheets = await getSheetsApi();
+
+  const lc = payload.lc;
+  const sheetName = LC_SHEET_MAP[lc] || "NAMS Responses";
+
   const headers = getHeaderRow();
-  const activeHeaders = await ensureHeaderRow(sheets, spreadsheetId, headers);
+  const activeHeaders = await ensureHeaderRow(
+    sheets,
+    spreadsheetId,
+    sheetName,
+    headers
+  );
+
   const row = buildRow(activeHeaders, payload);
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: `${SHEET_NAME}!A:A`,
+    range: `${sheetName}!A:A`,
     valueInputOption: "RAW",
     insertDataOption: "INSERT_ROWS",
     requestBody: {
