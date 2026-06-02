@@ -217,24 +217,9 @@ function getLeaderQuestions(role) {
 function closingQuestions() {
   return [
     {
-      field: "national_initiatives_incentives",
-      type: "text",
-      prompt: "What would make you more excited or willing to take part in national initiatives? ✨"
-    },
-    {
-      field: "icomm_campaign_feedback",
-      type: "text",
-      prompt: "What kinds of internal communications or campaigns would make you feel more seen, recognised, or included? 💌"
-    },
-    {
       field: "experience_improvement_suggestions",
       type: "text",
       prompt: "Any suggestions or feedback you'd like to share to help improve the member experience? 🌱"
-    },
-    {
-      field: "final_message",
-      type: "text",
-      prompt: "Last one, promise 🤍 Is there anything else you'd like us to know before we wrap up?"
     },
 
     // ✅ NEW BLOCK (ADDED ONLY)
@@ -284,12 +269,18 @@ function closingQuestions() {
       type: "text",
       prompt:
         "How can we make national operational sprints, such as the Cup, recognition spaces and ICOMMs more motivating for you to participate and perform your operations?"
-    }
+    },
+    {
+      field: "final_message",
+      type: "text",
+      prompt: "Last one, promise 🤍 Is there anything else you'd like us to know before we wrap up?"
+    },
   ];
 }
 
 function buildSurveyFlow(context = {}) {
   const lcQuestions = getLcQuestions(context.lc);
+
   const lcIntro =
     lcQuestions.length > 0
       ? [
@@ -301,11 +292,64 @@ function buildSurveyFlow(context = {}) {
         ]
       : [];
 
+  const hasCode = context.has_existing_nams_code === "Yes";
+
+  // ONLY SHOW DEMOGRAPHICS IF NO CODE
+  const demographics = hasCode ? [] : baseQuestions();
+
   return [
-    ...baseQuestions(),
+    // ⚠️ core gating happens here
+    ...demographics,
+
+    // leader questions always
     ...getLeaderQuestions(context.role),
+
+    // CORE NATIONAL BLOCK (ALWAYS ASKED)
+    {
+      field: "why_stayed_in_aiesec",
+      type: "choice",
+      options: MOTIVATION_OPTIONS,
+      prompt: "And what has made you stay in AIESEC so far? 🌱",
+      allowOther: true,
+      detailField: "why_stayed_in_aiesec_other",
+      selectionField: "why_stayed_in_aiesec_selection",
+      otherPrompt: "What has made you stay in AIESEC so far? 😊"
+    },
+    {
+      field: "local_community_relevance",
+      type: "scale_1_10",
+      prompt:
+        "On a scale of 1 to 10, how relevant do you think AIESEC is to your local community? 🌍"
+    },
+    {
+      field: "recommend_aiesec_score",
+      type: "scale_1_10",
+      prompt:
+        "On a scale of 1 to 10, how likely are you to recommend AIESEC as a leadership development organisation? 💬"
+    },
+    {
+      field: "recommend_aiesec_reason",
+      type: "text",
+      prompt: "Could you share a bit more about why you gave that score? ✨"
+    },
+    {
+      field: "connected_to_exchange_mission_score",
+      type: "scale_1_10",
+      prompt:
+        "On a scale of 1 to 10, how connected do you feel to AIESEC's exchange mission, and how likely do you feel you are to go on exchange? ✈️"
+    },
+    {
+      field: "preferred_exchange_program",
+      type: "choice",
+      options: EXCHANGE_PROGRAM_OPTIONS,
+      prompt: "If you were to go on exchange, which program feels most appealing to you? 🌏"
+    },
+
+    // LC SECTION
     ...lcIntro,
     ...lcQuestions,
+
+    // CLOSING + NEW BLOCK (UNCHANGED)
     ...closingQuestions()
   ].map((question) => ({
     allowOther: false,
