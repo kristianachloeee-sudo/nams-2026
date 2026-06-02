@@ -380,21 +380,10 @@ if (generatedNewCode) {
 await bot.sendMessage(
   session.chatId,
   thankYouMessage.join("\n"),
-      { reply_markup: removeKeyboard() }
-    );
+  { reply_markup: removeKeyboard() }
+);
 
-    clearSession(session.userId);
-  } catch (error) {
-    console.error("Failed to submit survey:", error);
-
-    await bot.sendMessage(
-      session.chatId,
-      [
-        "I couldn't save your response to Google Sheets just yet 🥺",
-        "Please try `/start` again after checking the bot setup, or fix the Sheets credentials and send your last answer once more. Please contact Kiana Palacios (kianapalacioss) on Telegram if the issue persists, and I'll help you get it sorted out! 💌"
-      ].join("\n"),
-      { reply_markup: removeKeyboard() }
-    );
+clearSession(session.userId);
 
     session.isSubmitting = false;
   }
@@ -481,19 +470,18 @@ if (roleChanged || lcChanged || hasCodeChanged) {
     session.flow.findIndex((q) => q.field === currentField) + 1;
 }
 
-  if (
-  roleChanged ||
-  lcChanged ||
-  hasCodeChanged
-)
-    session.flow = buildSurveyFlow({
-  has_existing_nams_code:
-    session.answers.has_existing_nams_code,
-  existing_nams_code:
-    session.answers.existing_nams_code,
-  lc: session.answers.lc,
-  role: session.answers.role
-});
+if (roleChanged || lcChanged || hasCodeChanged) {
+  session.flow = buildSurveyFlow({
+    has_existing_nams_code: session.answers.has_existing_nams_code,
+    existing_nams_code: session.answers.existing_nams_code,
+    lc: session.answers.lc,
+    role: session.answers.role
+  });
+
+  const currentField = currentQuestion.field;
+  session.index =
+    session.flow.findIndex((q) => q.field === currentField) + 1;
+}
 
     const currentField = currentQuestion.field;
     session.index = session.flow.findIndex((question) => question.field === currentField) + 1;
