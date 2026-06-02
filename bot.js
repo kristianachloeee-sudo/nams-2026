@@ -74,7 +74,6 @@ function createSession(msg) {
     answers: {
       has_existing_nams_code: "",
       existing_nams_code: "",
-
       telegram_first_name: msg.from.first_name || "",
       telegram_last_name: msg.from.last_name || "",
       telegram_username: msg.from.username || "",
@@ -90,7 +89,7 @@ function createSession(msg) {
 
 async function sendWelcome(chatId) {
   const welcomeMessage = [
-    "Hi there! Welcome to the Feb/March National AIESEC Membership Survey 💙",
+    "Hi there! Welcome to the Apr/May National AIESEC Membership Survey 💙",
     "",
     "We'd really love your honest thoughts here 😊",
     "Your responses help us understand your experience better.",
@@ -244,11 +243,12 @@ async function submitSurvey(session) {
 bot.onText(/\/start|\/survey/, async (msg) => {
   const session = createSession(msg);
 
- const flow = buildSurveyFlow({
-  has_existing_nams_code: session.answers.has_existing_nams_code,
-  lc: session.answers.lc,
-  role: session.answers.role
-});
+  const flow = buildSurveyFlow({
+    has_existing_nams_code: session.answers.has_existing_nams_code
+  });
+
+  session.flow = flow; // ✅ CRITICAL FIX (this was missing)
+  setSession(msg.from.id, session);
 
   await sendWelcome(msg.chat.id);
   await askCurrentQuestion(session);
