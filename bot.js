@@ -335,7 +335,19 @@ async function submitSurvey(session) {
 
   session.isSubmitting = true;
 
-  const referenceCode = createReferenceCode(session.answers.lc || "NAMS");
+  let referenceCode;
+
+if (
+  session.answers.has_existing_nams_code === "Yes" &&
+  session.answers.existing_nams_code
+) {
+  referenceCode =
+    session.answers.existing_nams_code;
+} else {
+  referenceCode = createReferenceCode(
+    session.answers.lc || "NAMS"
+  );
+}
 
   const payload = {
     ...session.answers,
@@ -347,17 +359,28 @@ async function submitSurvey(session) {
   try {
     await appendSurveyResponse(payload);
 
-    await bot.sendMessage(
-      session.chatId,
-      [
-        "Thank you so much for sharing all of that 💙",
-        "",
-        "Your responses have been recorded and will really help us shape better member experiences ✨",
-        "",
-        `Your reference code is: ${referenceCode} 🏷️`,
-        "",
-        "Please keep that code somewhere safe so you can submit this response with your MXS bot response to be recorded 😊"
-      ].join("\n"),
+    const generatedNewCode =
+  session.answers.has_existing_nams_code !==
+  "Yes";
+
+const thankYouMessage = [
+  "Thank you so much for sharing all of that 💙",
+  "",
+  "Your responses have been recorded and will really help us shape better member experiences ✨"
+];
+
+if (generatedNewCode) {
+  thankYouMessage.push(
+    "",
+    `Your reference code is: ${referenceCode} 🏷️`,
+    "",
+    "Please keep that code somewhere safe so you can submit this response with your MXS bot response to be recorded 😊"
+  );
+}
+
+await bot.sendMessage(
+  session.chatId,
+  thankYouMessage.join("\n"),
       { reply_markup: removeKeyboard() }
     );
 
@@ -431,16 +454,28 @@ bot.on("message", async (msg) => {
   const previousRole = session.answers.role;
   const previousLc = session.answers.lc;
 
-  await saveAnswer(session, text);
+  const hasCodeChanged =
+  currentQuestion.field ===
+    "has_existing_nams_code" &&
+  previousHasCode !==
+    session.answers.has_existing_nams_code;
 
   const roleChanged = currentQuestion.field === "role" && previousRole !== session.answers.role;
   const lcChanged = currentQuestion.field === "lc" && previousLc !== session.answers.lc;
 
-  if (roleChanged || lcChanged) {
+  if (
+  roleChanged ||
+  lcChanged ||
+  hasCodeChanged
+)
     session.flow = buildSurveyFlow({
-      lc: session.answers.lc,
-      role: session.answers.role
-    });
+  has_existing_nams_code:
+    session.answers.has_existing_nams_code,
+  existing_nams_code:
+    session.answers.existing_nams_code,
+  lc: session.answers.lc,
+  role: session.answers.role
+});
 
     const currentField = currentQuestion.field;
     session.index = session.flow.findIndex((question) => question.field === currentField) + 1;
