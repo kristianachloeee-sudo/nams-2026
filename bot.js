@@ -81,7 +81,6 @@ function createSession(msg) {
       telegram_last_name: msg.from.last_name || "",
       telegram_username: msg.from.username || "",
       telegram_user_id: String(msg.from.id)
-},
     },
     flow: [],
     index: 0,
@@ -452,16 +451,35 @@ bot.on("message", async (msg) => {
   }
 
   const previousRole = session.answers.role;
-  const previousLc = session.answers.lc;
+const previousLc = session.answers.lc;
+const previousCode = session.answers.has_existing_nams_code;
 
-  const hasCodeChanged =
-  currentQuestion.field ===
-    "has_existing_nams_code" &&
-  previousHasCode !==
-    session.answers.has_existing_nams_code;
+await saveAnswer(session, text);
 
-  const roleChanged = currentQuestion.field === "role" && previousRole !== session.answers.role;
-  const lcChanged = currentQuestion.field === "lc" && previousLc !== session.answers.lc;
+const roleChanged =
+  currentQuestion.field === "role" &&
+  previousRole !== session.answers.role;
+
+const lcChanged =
+  currentQuestion.field === "lc" &&
+  previousLc !== session.answers.lc;
+
+const hasCodeChanged =
+  currentQuestion.field === "has_existing_nams_code" &&
+  previousCode !== session.answers.has_existing_nams_code;
+
+if (roleChanged || lcChanged || hasCodeChanged) {
+  session.flow = buildSurveyFlow({
+    has_existing_nams_code: session.answers.has_existing_nams_code,
+    existing_nams_code: session.answers.existing_nams_code,
+    lc: session.answers.lc,
+    role: session.answers.role
+  });
+
+  const currentField = currentQuestion.field;
+  session.index =
+    session.flow.findIndex((q) => q.field === currentField) + 1;
+}
 
   if (
   roleChanged ||
