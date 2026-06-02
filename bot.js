@@ -74,10 +74,14 @@ function createSession(msg) {
     userId: msg.from.id,
     startedAt: new Date(),
     answers: {
+      has_existing_nams_code: "",
+      existing_nams_code: "",
+
       telegram_first_name: msg.from.first_name || "",
       telegram_last_name: msg.from.last_name || "",
       telegram_username: msg.from.username || "",
       telegram_user_id: String(msg.from.id)
+},
     },
     flow: [],
     index: 0,
