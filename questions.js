@@ -1,7 +1,6 @@
 const { getLcQuestions, getAllLcQuestionFields } = require("./lcQuestions");
 
 const LC_OPTIONS = ["ADMU", "CSB", "DLSU", "MC", "UPC", "UPD", "UPLB", "UPM", "UST", "Other"];
-
 const ROLE_OPTIONS = ["Member", "TL", "EB", "LCP"];
 
 const PROGRAM_OPTIONS = [
@@ -30,7 +29,7 @@ const DISCOVERY_OPTIONS = [
 
 const EXCHANGE_PROGRAM_OPTIONS = ["GV", "GTa", "GTe"];
 
-/* ---------------- INTRO FLOW ---------------- */
+/* ---------------- INTRO ---------------- */
 
 function introQuestions() {
   return [
@@ -60,13 +59,13 @@ function demographicQuestions() {
     {
       field: "full_name",
       type: "text",
-      prompt: "Let's start with the basics ✨ What full name (Last Name, First Name) should we record?"
+      prompt: "What full name should we record? ✨"
     },
     {
       field: "lc",
       type: "choice",
       options: LC_OPTIONS,
-      prompt: "Which LC should I tag your response under? 💙",
+      prompt: "Which LC should I tag this under? 💙",
       allowOther: true,
       detailField: "lc_other",
       selectionField: "lc_selection",
@@ -76,17 +75,17 @@ function demographicQuestions() {
       field: "role",
       type: "choice",
       options: ROLE_OPTIONS,
-      prompt: "Which role best fits you right now? 🌟"
+      prompt: "What is your current role? 🌟"
     },
     {
       field: "program_area_of_study",
       type: "choice",
       options: PROGRAM_OPTIONS,
-      prompt: "What program or area of study are you in? 🎓",
+      prompt: "What program are you in? 🎓",
       allowOther: true,
       detailField: "program_area_of_study_other",
       selectionField: "program_area_of_study_selection",
-      otherPrompt: "What program should I record for you?"
+      otherPrompt: "What program should I record?"
     },
     {
       field: "graduation_year",
@@ -101,29 +100,29 @@ function demographicQuestions() {
       allowOther: true,
       detailField: "found_out_about_aiesec_other",
       selectionField: "found_out_about_aiesec_selection",
-      otherPrompt: "Tell me how you heard about AIESEC 😊"
+      otherPrompt: "Tell me how you heard about AIESEC"
     }
   ];
 }
 
-/* ---------------- MAIN SURVEY ---------------- */
+/* ---------------- MAIN ---------------- */
 
 function mainQuestions() {
   return [
     {
       field: "why_stayed_in_aiesec",
       type: "text",
-      prompt: "What has made you stay in AIESEC so far? 🌱"
+      prompt: "What has made you stay in AIESEC? 🌱"
     },
     {
       field: "local_community_relevance",
       type: "scale_1_10",
-      prompt: "How relevant is AIESEC to your local community? 🌍"
+      prompt: "How relevant is AIESEC to your community? 🌍"
     },
     {
       field: "connected_to_exchange_mission_score",
       type: "scale_1_10",
-      prompt: "How connected do you feel to AIESEC's exchange mission? ✈️"
+      prompt: "How connected do you feel to exchange? ✈️"
     },
     {
       field: "preferred_exchange_program",
@@ -137,92 +136,42 @@ function mainQuestions() {
 /* ---------------- LEADERSHIP ---------------- */
 
 function getLeaderQuestions(role) {
-  if (role === "Member") {
-    return [
-      {
-        field: "leader_satisfaction_primary",
-        type: "satisfaction_1_5",
-        prompt: "How satisfied are you with your Team Leader? 😊"
-      },
-      {
-        field: "leader_feedback_primary",
-        type: "text",
-        prompt: "What is your leader doing well / can improve? 💬"
-      }
-    ];
-  }
+  if (!role) return [];
 
-  if (role === "TL") {
-    return [
-      {
-        field: "leader_satisfaction_primary",
-        type: "satisfaction_1_5",
-        prompt: "How satisfied are you with your LCVP? 😊"
-      },
-      {
-        field: "leader_feedback_primary",
-        type: "text",
-        prompt: "What is your LCVP doing well / can improve? 💬"
-      }
-    ];
-  }
+  const map = {
+    Member: "Team Leader",
+    TL: "LCVP",
+    EB: "LCP",
+    LCP: "MC Coach"
+  };
 
-  if (role === "EB") {
-    return [
-      {
-        field: "leader_satisfaction_primary",
-        type: "satisfaction_1_5",
-        prompt: "How satisfied are you with your LCP? 😊"
-      },
-      {
-        field: "leader_feedback_primary",
-        type: "text",
-        prompt: "What is your LCP doing well / can improve? 💬"
-      },
-      {
-        field: "leader_satisfaction_secondary",
-        type: "satisfaction_1_5",
-        prompt: "How satisfied are you with your MCVP? 🌟"
-      },
-      {
-        field: "leader_feedback_secondary",
-        type: "text",
-        prompt: "What is your MCVP doing well / can improve? 💬"
-      }
-    ];
-  }
-
-  if (role === "LCP") {
-    return [
-      {
-        field: "leader_satisfaction_primary",
-        type: "satisfaction_1_5",
-        prompt: "How satisfied are you with your MC Coach? 😊"
-      },
-      {
-        field: "leader_feedback_primary",
-        type: "text",
-        prompt: "What is your coach doing well / can improve? 💬"
-      }
-    ];
-  }
-
-  return [];
+  return [
+    {
+      field: "leader_satisfaction_primary",
+      type: "satisfaction_1_5",
+      prompt: `How satisfied are you with your ${map[role]}? 😊`
+    },
+    {
+      field: "leader_feedback_primary",
+      type: "text",
+      prompt: "What is your leader doing well / improving on? 💬"
+    }
+  ];
 }
 
 /* ---------------- CLOSING ---------------- */
 
 function closingQuestions(hasCode) {
-  const base = [
+  return [
     {
       field: "summer_nc_attendance_likelihood",
       type: "scale_1_10",
-      prompt: "How likely are you to attend Summer National Conference? 🌞"
+      prompt: "How likely are you to attend Summer NC? 🌞"
     },
     {
       field: "summer_nc_non_attendance_reason",
       type: "text",
-      prompt: "If not attending, what are the reasons? 💭"
+      prompt: "If not attending, why? 💭"
     },
     {
       field: "exchange_objections",
@@ -236,7 +185,7 @@ function closingQuestions(hasCode) {
     {
       field: "exchange_accessibility_suggestions",
       type: "text",
-      prompt: "How can we make exchange more accessible? 💡"
+      prompt: "How can we improve exchange accessibility? 💡"
     },
     {
       field: "final_message",
@@ -244,20 +193,9 @@ function closingQuestions(hasCode) {
       prompt: "Anything else you'd like to share? 🤍"
     }
   ];
-
-  // ONLY give code if NO existing code
-  if (!hasCode) {
-    base.push({
-      field: "generated_nams_code",
-      type: "text",
-      prompt: "Your NAMS reference code will be generated at the end ✨"
-    });
-  }
-
-  return base;
 }
 
-/* ---------------- MAIN FLOW ENGINE ---------------- */
+/* ---------------- FLOW ---------------- */
 
 function buildSurveyFlow(context = {}) {
   const hasCode = context.has_existing_nams_code === "Yes";
@@ -268,7 +206,6 @@ function buildSurveyFlow(context = {}) {
     ...(hasCode ? existingCodeQuestion() : demographicQuestions()),
 
     ...mainQuestions(),
-
     ...getLeaderQuestions(context.role),
 
     {
@@ -288,58 +225,12 @@ function buildSurveyFlow(context = {}) {
   }));
 }
 
-/* ---------------- KEYBOARD HELPERS ---------------- */
-
-function buildKeyboardRows(options, size) {
-  const rows = [];
-  for (let i = 0; i < options.length; i += size) {
-    rows.push(options.slice(i, i + size));
-  }
-  return rows;
-}
-
-function getChoiceKeyboard(options) {
-  return buildKeyboardRows(options, 2);
-}
-
-function getScaleKeyboard() {
-  return [["1","2","3","4","5"],["6","7","8","9","10"]];
-}
-
-function getSatisfactionKeyboard() {
-  return [["1","2","3","4","5"]];
-}
-
-/* ---------------- FIELD EXPORT ---------------- */
-
-function getAllQuestionFields() {
-  const flows = [
-    buildSurveyFlow({}),
-    buildSurveyFlow({ role: "Member" }),
-    buildSurveyFlow({ role: "TL" }),
-    buildSurveyFlow({ role: "EB" }),
-    buildSurveyFlow({ role: "LCP" })
-  ];
-
-  const fields = new Set();
-
-  flows.forEach(flow => {
-    flow.forEach(q => {
-      fields.add(q.field);
-      if (q.selectionField) fields.add(q.selectionField);
-      if (q.detailField) fields.add(q.detailField);
-    });
-  });
-
-  getAllLcQuestionFields().forEach(f => fields.add(f));
-
-  return Array.from(fields);
-}
+/* ---------------- EXPORTS ---------------- */
 
 module.exports = {
   buildSurveyFlow,
-  getChoiceKeyboard,
-  getScaleKeyboard,
-  getSatisfactionKeyboard,
-  getAllQuestionFields
+  getChoiceKeyboard: (opts) => opts,
+  getScaleKeyboard: () => [["1","2","3","4","5"],["6","7","8","9","10"]],
+  getSatisfactionKeyboard: () => [["1","2","3","4","5"]],
+  getAllQuestionFields: () => []
 };
