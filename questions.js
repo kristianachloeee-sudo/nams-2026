@@ -26,109 +26,168 @@ const DISCOVERY_OPTIONS = [
 const MOTIVATION_OPTIONS = ["Impact", "Community", "Personal Growth and Development", "Other"];
 const EXCHANGE_PROGRAM_OPTIONS = ["GV", "GTa", "GTe"];
 
-function baseQuestions() {
-  return [
-    {
-      field: "full_name",
-      type: "text",
-      prompt: "Let's start with the basics first ✨ What full name (Last Name, First Name) should we record for your response?"
-    },
-    {
-      field: "lc",
-      type: "choice",
-      options: LC_OPTIONS,
-      prompt: "Before we dive in, which LC should I tag your response under? 💙",
-      allowOther: true,
-      detailField: "lc_other",
-      selectionField: "lc_selection",
-      otherPrompt: "Got you! Which LC should I record for you? 😊"
-    },
-    {
-      field: "role",
-      type: "choice",
-      options: ROLE_OPTIONS,
-      prompt: "Which role best fits you right now? 🌟",
-      allowOther: false
-    },
-    {
-      field: "program_area_of_study",
-      type: "choice",
-      options: PROGRAM_OPTIONS,
-      prompt: "What university program or area of study are you in? 🎓",
-      allowOther: true,
-      detailField: "program_area_of_study_other",
-      selectionField: "program_area_of_study_selection",
-      otherPrompt: "What program or area of study should I write down for you? ✍️"
-    },
-    {
-      field: "graduation_year",
-      type: "year",
-      prompt: "What year are you graduating? 🎉"
-    },
-    {
-      field: "joined_aiesec",
-      type: "choice",
-      options: JOIN_YEAR_OPTIONS,
-      prompt: "When did you join AIESEC? 👀"
-    },
-    {
-      field: "found_out_about_aiesec",
-      type: "choice",
-      options: DISCOVERY_OPTIONS,
-      prompt: "How did you first hear about AIESEC? 👂",
-      allowOther: true,
-      detailField: "found_out_about_aiesec_other",
-      selectionField: "found_out_about_aiesec_selection",
-      otherPrompt: "Tell me how you first heard about AIESEC 😊"
-    },
-    {
-      field: "why_joined_aiesec",
-      type: "choice",
-      options: MOTIVATION_OPTIONS,
-      prompt: "What mainly made you join AIESEC in the first place? 💭",
-      allowOther: true,
-      detailField: "why_joined_aiesec_other",
-      selectionField: "why_joined_aiesec_selection",
-      otherPrompt: "What made you decide to join AIESEC? 💙"
-    },
-    {
-      field: "why_stayed_in_aiesec",
-      type: "choice",
-      options: MOTIVATION_OPTIONS,
-      prompt: "And what has made you stay in AIESEC so far? 🌱",
-      allowOther: true,
-      detailField: "why_stayed_in_aiesec_other",
-      selectionField: "why_stayed_in_aiesec_selection",
-      otherPrompt: "What has made you stay in AIESEC so far? 😊"
-    },
-    {
-      field: "local_community_relevance",
-      type: "scale_1_10",
-      prompt: "On a scale of 1 to 10, how relevant do you think AIESEC is to your local community? 🌍"
-    },
-    {
-      field: "recommend_aiesec_score",
-      type: "scale_1_10",
-      prompt: "On a scale of 1 to 10, how likely are you to recommend AIESEC as a leadership development organisation? 💬"
-    },
-    {
-      field: "recommend_aiesec_reason",
-      type: "text",
-      prompt: "Could you share a bit more about why you gave that score? ✨"
-    },
-    {
-      field: "connected_to_exchange_mission_score",
-      type: "scale_1_10",
-      prompt: "On a scale of 1 to 10, how connected do you feel to AIESEC's exchange mission, and how likely do you feel you are to go on exchange? ✈️"
-    },
-    {
-      field: "preferred_exchange_program",
-      type: "choice",
-      options: EXCHANGE_PROGRAM_OPTIONS,
-      prompt: "If you were to go on exchange, which program feels most appealing to you? 🌏"
-    }
-  ];
+function baseQuestions(context = {}) {
+const hasExistingCode =
+context.has_existing_nams_code === "Yes";
+
+const questions = [
+{
+field: "has_existing_nams_code",
+type: "choice",
+options: ["Yes", "No"],
+prompt:
+"Before we begin 💙\n\nDo you already have a NAMS reference code from a previous survey response?"
 }
+];
+
+if (hasExistingCode) {
+questions.push({
+field: "existing_nams_code",
+type: "text",
+prompt:
+"Perfect! Please enter your NAMS reference code so we can match your response 😊"
+});
+}
+
+questions.push(
+{
+field: "lc",
+type: "choice",
+options: LC_OPTIONS,
+prompt:
+"Before we dive in, which LC should I tag your response under? 💙",
+allowOther: true,
+detailField: "lc_other",
+selectionField: "lc_selection",
+otherPrompt:
+"Got you! Which LC should I record for you? 😊"
+},
+{
+field: "role",
+type: "choice",
+options: ROLE_OPTIONS,
+prompt:
+"Which role best fits you right now? 🌟"
+}
+);
+
+if (!hasExistingCode) {
+questions.push(
+{
+field: "full_name",
+type: "text",
+prompt:
+"Let's start with the basics first ✨ What full name (Last Name, First Name) should we record for your response?"
+},
+{
+field: "program_area_of_study",
+type: "choice",
+options: PROGRAM_OPTIONS,
+prompt:
+"What university program or area of study are you in? 🎓",
+allowOther: true,
+detailField:
+"program_area_of_study_other",
+selectionField:
+"program_area_of_study_selection",
+otherPrompt:
+"What program or area of study should I write down for you? ✍️"
+},
+{
+field: "graduation_year",
+type: "year",
+prompt:
+"What year are you graduating? 🎉"
+},
+{
+field: "joined_aiesec",
+type: "choice",
+options: JOIN_YEAR_OPTIONS,
+prompt:
+"When did you join AIESEC? 👀"
+},
+{
+field: "found_out_about_aiesec",
+type: "choice",
+options: DISCOVERY_OPTIONS,
+prompt:
+"How did you first hear about AIESEC? 👂",
+allowOther: true,
+detailField:
+"found_out_about_aiesec_other",
+selectionField:
+"found_out_about_aiesec_selection",
+otherPrompt:
+"Tell me how you first heard about AIESEC 😊"
+},
+{
+field: "why_joined_aiesec",
+type: "choice",
+options: MOTIVATION_OPTIONS,
+prompt:
+"What mainly made you join AIESEC in the first place? 💭",
+allowOther: true,
+detailField:
+"why_joined_aiesec_other",
+selectionField:
+"why_joined_aiesec_selection",
+otherPrompt:
+"What made you decide to join AIESEC? 💙"
+}
+);
+}
+
+questions.push(
+{
+field: "why_stayed_in_aiesec",
+type: "choice",
+options: MOTIVATION_OPTIONS,
+prompt:
+"And what has made you stay in AIESEC so far? 🌱",
+allowOther: true,
+detailField:
+"why_stayed_in_aiesec_other",
+selectionField:
+"why_stayed_in_aiesec_selection",
+otherPrompt:
+"What has made you stay in AIESEC so far? 😊"
+},
+{
+field: "local_community_relevance",
+type: "scale_1_10",
+prompt:
+"On a scale of 1 to 10, how relevant do you think AIESEC is to your local community? 🌍"
+},
+{
+field: "recommend_aiesec_score",
+type: "scale_1_10",
+prompt:
+"On a scale of 1 to 10, how likely are you to recommend AIESEC as a leadership development organisation? 💬"
+},
+{
+field: "recommend_aiesec_reason",
+type: "text",
+prompt:
+"Could you share a bit more about why you gave that score? ✨"
+},
+{
+field: "connected_to_exchange_mission_score",
+type: "scale_1_10",
+prompt:
+"On a scale of 1 to 10, how connected do you feel to AIESEC's exchange mission, and how likely do you feel you are to go on exchange? ✈️"
+},
+{
+field: "preferred_exchange_program",
+type: "choice",
+options: EXCHANGE_PROGRAM_OPTIONS,
+prompt:
+"If you were to go on exchange, which program feels most appealing to you? 🌏"
+}
+);
+
+return questions;
+}
+
 
 function getLeaderQuestions(role) {
   if (role === "Member") {
