@@ -244,8 +244,11 @@ async function submitSurvey(session) {
 bot.onText(/\/start|\/survey/, async (msg) => {
   const session = createSession(msg);
 
-  session.flow = buildSurveyFlow();
-  setSession(msg.from.id, session);
+ const flow = buildSurveyFlow({
+  has_existing_nams_code: session.answers.has_existing_nams_code,
+  lc: session.answers.lc,
+  role: session.answers.role
+});
 
   await sendWelcome(msg.chat.id);
   await askCurrentQuestion(session);
