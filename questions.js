@@ -300,18 +300,20 @@ function closingQuestions() {
 
 function buildSurveyFlow(context = {}) {
   const lcQuestions = getLcQuestions(context.lc);
+
   const lcIntro =
     lcQuestions.length > 0
       ? [
           {
             type: "message",
-            prompt: "Thank you so much for answering the national questions so far 💙\n\nNow, here are a few questions from your LC so we can understand your local experience better too 😊"
+            prompt:
+              "Thank you so much for answering the national questions so far 💙\n\nNow, here are a few questions from your LC so we can understand your local experience better too 😊"
           }
         ]
       : [];
 
   return [
-    ...baseQuestions(),
+    ...baseQuestions(context),
     ...getLeaderQuestions(context.role),
     ...lcIntro,
     ...lcQuestions,
