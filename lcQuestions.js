@@ -178,6 +178,16 @@ const LC_QUESTIONS = {
       field: "upm_future_role_interest",
       type: "text",
       prompt: "Are you willing to learn more about your role or other roles in the future? Please explain in 1 to 3 sentences 🚀"
+    },
+    {
+      field: "upm_value_in_aiesec",
+      type: "satisfaction_1_5",
+      prompt: "Do you feel valued in AIESEC? Do you feel like you are contributing to the organization’s operations? \n\nScale: 1 = Not so much, 5 = Absolutely"
+    },
+    {
+      field: "upm_growth",
+      type: "satisfaction_1_5",
+      prompt: "Is AUPM helping you grow personally and professionally? \n\nScale: 1 = Not at all, 5 = Absolutely"
     }
   ],
   UST: [
