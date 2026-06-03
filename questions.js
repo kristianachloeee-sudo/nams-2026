@@ -166,12 +166,14 @@ function closingQuestions(hasCode) {
     {
       field: "summer_nc_attendance_likelihood",
       type: "scale_1_10",
-      prompt: "How likely are you to attend Summer NC? 🌞"
+      prompt:
+        "Our Summer National Conference will be happening from July 31–August 2 in Rizal (Friday–Sunday). How likely would you be able to attend? 🌞\n\nScale: 1 = Not attending, 10 = Will definitely be there"
     },
     {
       field: "summer_nc_non_attendance_reason",
       type: "text",
-      prompt: "If not attending, why? 💭"
+      prompt:
+        "If you will be unable or are uninterested in attending, what are the top reasons for this? 💭\n\n(e.g. price, location, prior commitments, academic workload, etc.)"
     },
     {
       field: "exchange_objections",
@@ -180,12 +182,14 @@ function closingQuestions(hasCode) {
       allowOther: true,
       detailField: "exchange_objections_other",
       selectionField: "exchange_objections_selection",
-      prompt: "What stops people from going on exchange? ✈️"
+      prompt:
+        "What are the biggest objections you have, or think others have, towards going on exchange? ✈️\n\nYou can select multiple."
     },
     {
       field: "exchange_accessibility_suggestions",
       type: "text",
-      prompt: "How can we improve exchange accessibility? 💡"
+      prompt:
+        "What can we do nationally and locally to make exchange and our national initiatives more accessible and appealing to you? 💡\n\nPlease give concrete suggestions if possible (e.g. subsidies, clearer info sessions, alumni sharing, payment schemes, etc.)"
     },
     {
       field: "final_message",
@@ -203,22 +207,21 @@ function buildSurveyFlow(context = {}) {
   const flow = [
     ...introQuestions(),
 
-    ...(hasCode ? existingCodeQuestion() : demographicQuestions()),
+    ...(hasCode
+      ? existingCodeQuestion()
+      : demographicQuestions()),
 
     ...mainQuestions(),
-    ...getLeaderQuestions(context.role),
 
     {
       type: "message",
       prompt: "Now some final questions 💙"
     },
 
-    ...(getLcQuestions(context.lc) || []),
-
     ...closingQuestions(hasCode)
   ];
 
-  return flow.map(q => ({
+  return flow.map((q) => ({
     allowOther: false,
     prompt: "",
     ...q
