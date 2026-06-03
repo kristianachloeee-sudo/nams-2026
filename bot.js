@@ -11,6 +11,8 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 
 const sessions = new Map();
 
+/* ---------------- SESSION ---------------- */
+
 function getSession(id) {
   return sessions.get(id);
 }
@@ -35,12 +37,12 @@ function createSession(msg) {
   };
 }
 
+/* ---------------- ASK ---------------- */
+
 async function ask(session) {
   const q = session.flow[session.index];
 
-  if (!q) {
-    return submit(session);
-  }
+  if (!q) return submit(session);
 
   if (q.type === "message") {
     await bot.sendMessage(session.chatId, q.prompt);
@@ -51,20 +53,32 @@ async function ask(session) {
   await bot.sendMessage(session.chatId, q.prompt);
 }
 
+/* ---------------- HANDLE ANSWER ---------------- */
+
 async function handleAnswer(session, text) {
   const q = session.flow[session.index];
 
-  if (!q) {
-    return submit(session);
+  if (!q) return submit(session);
+
+  // skip message nodes safely
+  if (!q.field) {
+    session.index++;
+    return ask(session);
   }
 
+  // store answer
   session.answers[q.field] = text;
-
   session.index++;
 
+  // ---------------- IMPORTANT FIX ----------------
+  // Rebuild flow IMMEDIATELY AFTER we capture the branching answer
   if (q.field === "has_existing_nams_code") {
-    session.flow = buildSurveyFlow(session.answers);
+    const updatedFlow = buildSurveyFlow(session.answers);
 
+    session.flow = updatedFlow;
+
+    // IMPORTANT:
+    // reset index to NEXT valid question in new flow
     session.index = 1;
 
     return ask(session);
@@ -73,9 +87,10 @@ async function handleAnswer(session, text) {
   return ask(session);
 }
 
+/* ---------------- SUBMIT ---------------- */
+
 async function submit(session) {
   if (session.isSubmitting) return;
-
   session.isSubmitting = true;
 
   const referenceCode =
@@ -100,6 +115,8 @@ async function submit(session) {
   clearSession(session.userId);
 }
 
+/* ---------------- EVENTS ---------------- */
+
 bot.onText(/\/start/, async (msg) => {
   const session = createSession(msg);
 
@@ -110,11 +127,9 @@ bot.onText(/\/start/, async (msg) => {
 
 bot.on("message", async (msg) => {
   if (!msg.text) return;
-
   if (msg.text.startsWith("/")) return;
 
   const session = getSession(msg.from.id);
-
   if (!session) return;
 
   await handleAnswer(session, msg.text.trim());
