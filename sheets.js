@@ -25,7 +25,8 @@ function getRequiredEnv(name) {
 
 function createAuthClient() {
   const clientEmail = getRequiredEnv("GOOGLE_SERVICE_ACCOUNT_EMAIL");
-  const privateKey = getRequiredEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n");
+  const privateKey =
+    getRequiredEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n");
 
   return new google.auth.JWT({
     email: clientEmail,
@@ -51,11 +52,10 @@ async function ensureSheetTab(sheets, spreadsheetId, sheetName) {
       range: `${sheetName}!1:1`
     });
   } catch (error) {
-    const isMissingSheet = error?.code === 400 || error?.status === 400;
+    const isMissingSheet =
+      error?.code === 400 || error?.status === 400;
 
-    if (!isMissingSheet) {
-      throw error;
-    }
+    if (!isMissingSheet) throw error;
 
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
@@ -63,9 +63,7 @@ async function ensureSheetTab(sheets, spreadsheetId, sheetName) {
         requests: [
           {
             addSheet: {
-              properties: {
-                title: sheetName
-              }
+              properties: { title: sheetName }
             }
           }
         ]
@@ -87,7 +85,12 @@ function getHeaderRow() {
   ];
 }
 
-async function ensureHeaderRow(sheets, spreadsheetId, sheetName, headers) {
+async function ensureHeaderRow(
+  sheets,
+  spreadsheetId,
+  sheetName,
+  headers
+) {
   await ensureSheetTab(sheets, spreadsheetId, sheetName);
 
   const response = await sheets.spreadsheets.values.get({
@@ -102,9 +105,7 @@ async function ensureHeaderRow(sheets, spreadsheetId, sheetName, headers) {
       spreadsheetId,
       range: `${sheetName}!1:1`,
       valueInputOption: "RAW",
-      requestBody: {
-        values: [headers]
-      }
+      requestBody: { values: [headers] }
     });
   }
 
@@ -114,12 +115,9 @@ async function ensureHeaderRow(sheets, spreadsheetId, sheetName, headers) {
 function buildRow(headers, payload) {
   return headers.map((header) => {
     const value = payload[header];
-
-    if (value === undefined || value === null) {
-      return "";
-    }
-
-    return String(value);
+    return value === undefined || value === null
+      ? ""
+      : String(value);
   });
 }
 
@@ -129,9 +127,10 @@ async function appendSurveyResponse(payload) {
 
   const lc = payload.lc || "";
   const sheetName =
-  [lc] May Responses || "NAMS Responses";
+    LC_SHEET_MAP[lc] || "NAMS Responses";
 
   const headers = getHeaderRow();
+
   const activeHeaders = await ensureHeaderRow(
     sheets,
     spreadsheetId,
