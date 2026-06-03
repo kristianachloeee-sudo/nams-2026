@@ -127,8 +127,9 @@ async function appendSurveyResponse(payload) {
   const spreadsheetId = getRequiredEnv("GOOGLE_SHEET_ID");
   const sheets = await getSheetsApi();
 
-  const lc = payload.lc;
-  const sheetName = LC_SHEET_MAP[lc] || "NAMS Responses";
+  const lc = payload.lc || "";
+  const sheetName =
+  [lc] May Responses || "NAMS Responses";
 
   const headers = getHeaderRow();
   const activeHeaders = await ensureHeaderRow(
