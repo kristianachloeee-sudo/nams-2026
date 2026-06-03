@@ -1,7 +1,21 @@
 const { getLcQuestions, getAllLcQuestionFields } = require("./lcQuestions");
 
-const LC_OPTIONS = ["ADMU", "CSB", "DLSU", "MC", "UPC", "UPD", "UPLB", "UPM", "UST", "Other"];
-const ROLE_OPTIONS = ["Member", "TL", "EB", "LCP"];
+/* ---------------- OPTIONS ---------------- */
+
+const LC_OPTIONS = [
+  "ADMU",
+  "CSB",
+  "DLSU",
+  "MC",
+  "UPC",
+  "UPD",
+  "UPLB",
+  "UPM",
+  "UST",
+  "Other"
+];
+
+const ROLE_OPTIONS = ["Member", "TL", "EB", "LCP", "MCEB"];
 
 const PROGRAM_OPTIONS = [
   "Business / Management",
@@ -42,7 +56,9 @@ function introQuestions() {
   ];
 }
 
-function existingCodeQuestion() {
+/* ---------------- EXISTING CODE PATH ---------------- */
+
+function existingCodeQuestions() {
   return [
     {
       field: "existing_nams_code",
@@ -52,24 +68,23 @@ function existingCodeQuestion() {
   ];
 }
 
-/* ---------------- DEMOGRAPHICS ---------------- */
+/* ---------------- DEMOGRAPHICS (NO CODE USERS ONLY) ---------------- */
 
 function demographicQuestions() {
   return [
     {
       field: "full_name",
       type: "text",
-      prompt: "What full name should we record? ✨"
+      prompt: "Let's start with the basics ✨ What full name should we record?"
     },
     {
       field: "lc",
       type: "choice",
       options: LC_OPTIONS,
-      prompt: "Which LC should I tag this under? 💙",
       allowOther: true,
       detailField: "lc_other",
       selectionField: "lc_selection",
-      otherPrompt: "Which LC should I record?"
+      prompt: "Which LC should I tag your response under? 💙"
     },
     {
       field: "role",
@@ -81,11 +96,10 @@ function demographicQuestions() {
       field: "program_area_of_study",
       type: "choice",
       options: PROGRAM_OPTIONS,
-      prompt: "What program are you in? 🎓",
       allowOther: true,
       detailField: "program_area_of_study_other",
       selectionField: "program_area_of_study_selection",
-      otherPrompt: "What program should I record?"
+      prompt: "What program or area of study are you in? 🎓"
     },
     {
       field: "graduation_year",
@@ -93,21 +107,26 @@ function demographicQuestions() {
       prompt: "What year are you graduating? 🎉"
     },
     {
+      field: "joined_aiesec",
+      type: "choice",
+      options: JOIN_YEAR_OPTIONS,
+      prompt: "When did you join AIESEC? 👀"
+    },
+    {
       field: "found_out_about_aiesec",
       type: "choice",
       options: DISCOVERY_OPTIONS,
-      prompt: "How did you first hear about AIESEC? 👂",
       allowOther: true,
       detailField: "found_out_about_aiesec_other",
       selectionField: "found_out_about_aiesec_selection",
-      otherPrompt: "Tell me how you heard about AIESEC"
+      prompt: "How did you first hear about AIESEC? 👂"
     }
   ];
 }
 
-/* ---------------- MAIN ---------------- */
+/* ---------------- NATIONAL QUESTIONS ---------------- */
 
-function mainQuestions() {
+function nationalQuestions() {
   return [
     {
       field: "why_stayed_in_aiesec",
@@ -120,9 +139,19 @@ function mainQuestions() {
       prompt: "How relevant is AIESEC to your community? 🌍"
     },
     {
+      field: "recommend_aiesec_score",
+      type: "scale_1_10",
+      prompt: "How likely are you to recommend AIESEC as a leadership organisation? 💬"
+    },
+    {
+      field: "recommend_aiesec_reason",
+      type: "text",
+      prompt: "Could you share why you gave that score? ✨"
+    },
+    {
       field: "connected_to_exchange_mission_score",
       type: "scale_1_10",
-      prompt: "How connected do you feel to exchange? ✈️"
+      prompt: "How connected do you feel to exchange, and how likely are you to go? ✈️"
     },
     {
       field: "preferred_exchange_program",
@@ -133,107 +162,228 @@ function mainQuestions() {
   ];
 }
 
-/* ---------------- LEADERSHIP ---------------- */
+/* ---------------- LEADER QUESTIONS ---------------- */
 
 function getLeaderQuestions(role) {
   if (!role) return [];
 
-  const map = {
-    Member: "Team Leader",
-    TL: "LCVP",
-    EB: "LCP",
-    LCP: "MC Coach"
-  };
+  const isMCEB = role === "MCEB";
 
-  return [
-    {
-      field: "leader_satisfaction_primary",
-      type: "satisfaction_1_5",
-      prompt: `How satisfied are you with your ${map[role]}? 😊`
-    },
-    {
-      field: "leader_feedback_primary",
-      type: "text",
-      prompt: "What is your leader doing well / improving on? 💬"
-    }
-  ];
+  if (role === "Member") {
+    return [
+      {
+        field: "leader_satisfaction_primary",
+        type: "satisfaction_1_5",
+        prompt: "How satisfied are you with your Team Leader? 😊"
+      },
+      {
+        field: "leader_feedback_primary",
+        type: "text",
+        prompt: "What is your Team Leader doing well, and what could they improve on? 💬"
+      }
+    ];
+  }
+
+  if (role === "TL") {
+    return [
+      {
+        field: "leader_satisfaction_primary",
+        type: "satisfaction_1_5",
+        prompt: "How satisfied are you with your LCVP? 😊"
+      },
+      {
+        field: "leader_feedback_primary",
+        type: "text",
+        prompt: "What is your LCVP doing well, and what could they improve on? 💬"
+      }
+    ];
+  }
+
+  if (role === "EB" || isMCEB) {
+    return [
+      {
+        field: "leader_satisfaction_primary",
+        type: "satisfaction_1_5",
+        prompt: isMCEB
+          ? "How satisfied are you with your MCP? 😊"
+          : "How satisfied are you with your LCP? 😊"
+      },
+      {
+        field: "leader_feedback_primary",
+        type: "text",
+        prompt: isMCEB
+          ? "What is your MCP doing well, and what could they improve on? 💬"
+          : "What is your LCP doing well, and what could they improve on? 💬"
+      },
+      {
+        field: "leader_satisfaction_secondary",
+        type: "satisfaction_1_5",
+        prompt: isMCEB
+          ? "How satisfied are you with your AIVP? 🌟"
+          : "How satisfied are you with your Commission Head? 🌟"
+      },
+      {
+        field: "leader_feedback_secondary",
+        type: "text",
+        prompt: isMCEB
+          ? "What is your AIVP doing well, and what could they improve on? 💬"
+          : "What is your Commission Head doing well, and what could they improve on? 💬"
+      }
+    ];
+  }
+
+  if (role === "LCP") {
+    return [
+      {
+        field: "leader_satisfaction_primary",
+        type: "satisfaction_1_5",
+        prompt: "How satisfied are you with your MC Coach? 😊"
+      },
+      {
+        field: "leader_feedback_primary",
+        type: "text",
+        prompt: "What is your MC Coach doing well, and what could they improve on? 💬"
+      },
+      {
+        field: "leader_satisfaction_secondary",
+        type: "satisfaction_1_5",
+        prompt: "How satisfied are you with your Commission Head? 🌟"
+      },
+      {
+        field: "leader_feedback_secondary",
+        type: "text",
+        prompt: "What is your Commission Head doing well, and what could they improve on? 💬"
+      }
+    ];
+  }
+
+  return [];
 }
 
-/* ---------------- CLOSING ---------------- */
+/* ---------------- CLOSING QUESTIONS ---------------- */
 
-function closingQuestions(hasCode) {
+function closingQuestions() {
   return [
     {
-      field: "summer_nc_attendance_likelihood",
-      type: "scale_1_10",
-      prompt:
-        "Our Summer National Conference will be happening from July 31–August 2 in Rizal (Friday–Sunday). How likely would you be able to attend? 🌞\n\nScale: 1 = Not attending, 10 = Will definitely be there"
-    },
-    {
-      field: "summer_nc_non_attendance_reason",
+      field: "national_initiatives_incentives",
       type: "text",
-      prompt:
-        "If you will be unable or are uninterested in attending, what are the top reasons for this? 💭\n\n(e.g. price, location, prior commitments, academic workload, etc.)"
+      prompt: "What would make you more excited to join national initiatives? ✨"
     },
     {
-      field: "exchange_objections",
-      type: "multi_choice",
-      options: ["Price", "Academics", "Family", "Others"],
-      allowOther: true,
-      detailField: "exchange_objections_other",
-      selectionField: "exchange_objections_selection",
-      prompt:
-        "What are the biggest objections you have, or think others have, towards going on exchange? ✈️\n\nYou can select multiple."
-    },
-    {
-      field: "exchange_accessibility_suggestions",
+      field: "icomm_campaign_feedback",
       type: "text",
-      prompt:
-        "What can we do nationally and locally to make exchange and our national initiatives more accessible and appealing to you? 💡\n\nPlease give concrete suggestions if possible (e.g. subsidies, clearer info sessions, alumni sharing, payment schemes, etc.)"
+      prompt: "What communications would make you feel more seen and included? 💌"
+    },
+    {
+      field: "experience_improvement_suggestions",
+      type: "text",
+      prompt: "Any suggestions to improve member experience? 🌱"
     },
     {
       field: "final_message",
       type: "text",
-      prompt: "Anything else you'd like to share? 🤍"
+      prompt: "Last one 🤍 Anything else you'd like to share?"
     }
   ];
 }
 
-/* ---------------- FLOW ---------------- */
+/* ---------------- FLOW BUILDER ---------------- */
 
 function buildSurveyFlow(context = {}) {
-  const hasCode = context.has_existing_nams_code === "Yes";
+  const hasCode =
+    String(context.has_existing_nams_code || "")
+      .trim()
+      .toLowerCase() === "yes";
 
-  const flow = [
+  const lcQuestions = getLcQuestions(context.lc);
+
+  const lcIntro =
+    lcQuestions && lcQuestions.length > 0
+      ? [
+          {
+            type: "message",
+            prompt:
+              "Now we’ll move to your LC-specific questions 💙"
+          }
+        ]
+      : [];
+
+  return [
     ...introQuestions(),
 
     ...(hasCode
-      ? existingCodeQuestion()
+      ? existingCodeQuestions()
       : demographicQuestions()),
 
-    ...mainQuestions(),
+    ...nationalQuestions(),
 
-    {
-      type: "message",
-      prompt: "Now some final questions 💙"
-    },
+    ...getLeaderQuestions(context.role),
 
-    ...closingQuestions(hasCode)
-  ];
+    ...lcIntro,
 
-  return flow.map((q) => ({
+    ...(lcQuestions || []),
+
+    ...closingQuestions()
+  ].map((q) => ({
     allowOther: false,
     prompt: "",
     ...q
   }));
 }
 
-/* ---------------- EXPORTS ---------------- */
+/* ---------------- KEYBOARD HELPERS ---------------- */
+
+function buildKeyboardRows(options, size) {
+  const rows = [];
+  for (let i = 0; i < options.length; i += size) {
+    rows.push(options.slice(i, i + size));
+  }
+  return rows;
+}
+
+function getChoiceKeyboard(options) {
+  return buildKeyboardRows(options, 2);
+}
+
+function getScaleKeyboard() {
+  return [["1", "2", "3", "4", "5"], ["6", "7", "8", "9", "10"]];
+}
+
+function getSatisfactionKeyboard() {
+  return [["1", "2", "3", "4", "5"]];
+}
+
+/* ---------------- FIELD TRACKING ---------------- */
+
+function getAllQuestionFields() {
+  const flows = [
+    buildSurveyFlow(),
+    buildSurveyFlow({ role: "Member" }),
+    buildSurveyFlow({ role: "TL" }),
+    buildSurveyFlow({ role: "EB" }),
+    buildSurveyFlow({ role: "LCP" }),
+    buildSurveyFlow({ role: "MCEB" })
+  ];
+
+  const fields = new Set();
+
+  flows.forEach((flow) => {
+    flow.forEach((q) => {
+      fields.add(q.field);
+      if (q.selectionField) fields.add(q.selectionField);
+      if (q.detailField) fields.add(q.detailField);
+    });
+  });
+
+  getAllLcQuestionFields().forEach((f) => fields.add(f));
+
+  return Array.from(fields);
+}
 
 module.exports = {
   buildSurveyFlow,
-  getChoiceKeyboard: (opts) => opts,
-  getScaleKeyboard: () => [["1","2","3","4","5"],["6","7","8","9","10"]],
-  getSatisfactionKeyboard: () => [["1","2","3","4","5"]],
-  getAllQuestionFields: () => []
+  getChoiceKeyboard,
+  getScaleKeyboard,
+  getSatisfactionKeyboard,
+  getAllQuestionFields
 };
