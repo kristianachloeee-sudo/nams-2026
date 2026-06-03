@@ -136,3 +136,16 @@ bot.on("message", async (msg) => {
 });
 
 console.log("Bot running...");
+
+const express = require("express");
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (_req, res) => {
+  res.send("NAMS bot is running 💙");
+});
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Health server running on", PORT);
+});
